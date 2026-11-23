@@ -857,49 +857,111 @@ body.panel-hidden #panelToggle{left:0}
 .leaflet-bottom.leaflet-left{left:var(--pl);bottom:20px}
 
 /* ------------------------------------------------------------ 响应式 */
-@media (max-width:1180px){ #toolbar{top:64px} }
+@media (max-width:1180px){ #toolbar{top:64px;left:calc(var(--pl) - 12px);right:20px} }
+
+/* —— 手机：地图铺满整屏，数据面板改为可收起的底部抽屉 —— */
 @media (max-width:720px){
-  #map{inset:0 0 44vh 0}
+  :root{
+    --sheet-h:46vh;        /* 抽屉展开高度（下面用 dvh 覆盖） */
+    --sheet-h:46dvh;
+    --peek:72px;           /* 收起后露出的标题条高度 */
+  }
+  body.panel-hidden{--sheet-h:var(--peek)}
+
+  #map{inset:0}
+
   #panel{
-    left:0;right:0;bottom:0;top:auto;width:auto;height:44vh;
-    border-radius:14px 14px 0 0;border-bottom:0;
-    padding:18px 16px 0;
+    left:0;right:0;top:auto;bottom:0;width:auto;
+    height:46vh;height:46dvh;
+    padding:26px 16px 0;
+    border-radius:16px 16px 0 0;border-bottom:0;
+    box-shadow:0 -14px 36px rgba(58,45,30,.22);
   }
-  body.panel-hidden #panel{transform:translateY(110%)}
+  body.panel-hidden #panel{transform:translateY(calc(100% - var(--peek)))}
+
+  /* 收起 / 展开：骑在抽屉上沿的抓手 */
   #panelToggle{
-    left:auto;right:12px;top:auto;bottom:calc(44vh + 10px);
-    width:34px;height:34px;border:1px solid var(--line);border-radius:50%;
-    transform:none;box-shadow:0 3px 12px rgba(58,45,30,.18);
+    left:50%;right:auto;top:auto;bottom:calc(var(--sheet-h) - 14px);
+    width:64px;height:28px;padding:0;
+    transform:translateX(-50%);
+    display:flex;align-items:center;justify-content:center;
+    border:1px solid var(--line);border-bottom:0;border-radius:14px 14px 0 0;
+    font-size:0;box-shadow:0 -3px 10px rgba(58,45,30,.10);
+    transition:bottom .3s ease,background .15s,color .15s;
   }
-  body.panel-hidden #panelToggle{bottom:12px}
-  .brand{padding-bottom:12px}
-  .brand h1{font-size:23px}
-  .sec{padding-top:14px;margin-top:14px}
-  .sec-h h2{font-size:13px}
-  .aitem .nm b{font-size:16px}
-  .aitem .nm i,.aitem .val i{font-size:13px}
-  .aitem .val b{font-size:18px}
-  .lg-title{font-size:14px}
-  .lg-tick b{font-size:12px}
-  .lg-tick i{font-size:13px}
-  .btn.primary{font-size:16px;min-height:50px}
-  .panel-foot{box-shadow:0 -12px 18px var(--card)}
+  #panelToggle::after{
+    content:"";display:block;width:9px;height:9px;margin-top:-4px;
+    border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+    transform:rotate(45deg);
+  }
+  body.panel-hidden #panelToggle{left:50%;right:auto;bottom:calc(var(--peek) - 14px)}
+  body.panel-hidden #panelToggle::after{margin-top:4px;transform:rotate(-135deg)}
+
+  .brand{padding-bottom:10px}
+  .brand h1{font-size:21px;letter-spacing:.8px}
+  .sec{padding-top:12px;margin-top:12px}
+  .sec-h{margin-bottom:8px}
+  .sec-h h2{font-size:12.5px;letter-spacing:1.6px}
+
+  /* 四个地点：两列排布，省下一半竖向空间 */
+  .alist{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+  .aitem{min-height:44px;padding:4px 0;gap:8px}
+  .aitem .dot{width:8px;height:8px;flex:0 0 8px}
+  .aitem .nm b{font-size:14px}
+  .aitem .nm i{font-size:11.5px}
+  .aitem .val b{font-size:15px}
+  .aitem .val i{font-size:11.5px}
+  .aitem:nth-last-child(1),.aitem:nth-last-child(2){border-bottom:0}
+
+  #legend{padding:10px 12px 8px}
+  .lg-title{font-size:12px;margin-bottom:8px}
+  .lg-bar{height:14px}
+  .lg-scale{height:24px;margin-top:4px}
+  .lg-tick b{font-size:11px}
+  .lg-tick i{font-size:11.5px}
+
+  .btn.primary{font-size:15px;min-height:46px;padding:8px}
+  .panel-foot{padding:8px 0 10px;gap:8px;box-shadow:0 -12px 18px var(--card)}
+  .src{font-size:11px}
+
+  /* 提示条：贴顶一行，过长省略 */
   #hint{
-    left:12px;right:12px;top:12px;bottom:auto;max-width:none;font-size:13px;padding:8px 12px;
+    left:10px;right:10px;top:8px;bottom:auto;max-width:none;
+    padding:7px 11px;font-size:12.5px;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   }
+  /* 图层开关：按内容宽度自然换行，不强行拉成三列 */
   #toolbar{
-    left:12px;right:12px;top:52px;bottom:auto;
-    display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+    left:10px;right:10px;top:50px;bottom:auto;
+    display:flex;flex-wrap:wrap;justify-content:flex-start;gap:6px;
   }
-  .tg{justify-content:center;min-height:42px;padding:0 8px;font-size:13px;box-shadow:none}
-  #info{left:12px;right:12px;bottom:12px;width:auto;max-width:none;padding:12px 14px 10px}
-  .info-big{margin:10px 0 8px}
-  .info-big .big{padding:7px 4px}
-  .info-big .big-v{font-size:25px}
-  .info-note{font-size:12.5px}
-  .leaflet-bottom.leaflet-left{left:12px;bottom:172px}
-  #toast{bottom:16px;max-width:calc(100% - 24px);text-align:center}
+  .tg{flex:0 0 auto;min-height:36px;padding:0 11px;font-size:12.5px;box-shadow:0 2px 8px rgba(58,45,30,.12)}
+
+  /* 信息卡：浮在抽屉上沿，宽度撑满（不再被抽屉盖住） */
+  #info{
+    position:fixed;z-index:1250;left:10px;right:10px;bottom:calc(var(--sheet-h) + 40px);
+    width:auto;max-width:none;padding:10px 12px 9px;
+    transition:bottom .3s ease;
+  }
+  .info-hd{font-size:13px;letter-spacing:.2px}
+  .info-big{gap:8px;margin:8px 0 6px}
+  .info-big .big{padding:6px 4px}
+  .info-big .big-l{font-size:11px}
+  .info-big .big-v{font-size:23px}
+  .info-big .big-v i{font-size:12px}
+  .info-note{font-size:11.5px;line-height:1.5}
+
+  /* 缩放交给双指；比例尺让到抽屉上沿 */
+  .leaflet-control-zoom{display:none}
+  .leaflet-bottom.leaflet-left{left:10px;bottom:calc(var(--sheet-h) + 10px)}
+
+  #toast{
+    bottom:calc(var(--sheet-h) + 16px);max-width:calc(100% - 20px);
+    text-align:center;font-size:13px;padding:9px 16px;
+  }
+
+  /* 点位牌略缩小，减少相邻标记互相压字 */
+  .apin{transform:scale(.86);transform-origin:50% 36px}
 }
 
 /* ---------- 原有备选浅色变量（保留自旧模板，现已由上方方案取代） ---------- */
@@ -1316,11 +1378,12 @@ satLayer.on('tileerror', () => { if (!navigator.onLine || ++tileErrs >= 8) goOff
 roadLayer.on('tileload', backOnline);
 satLayer.on('tileload', backOnline);
 
-/* 覆盖面板位于地图容器内部：阻止其点击冒泡，否则会被误判为「地图取点」 */
+/* 覆盖面板位于地图容器内部：阻止其点击冒泡，否则会被误判为「地图取点」；
+   触摸设备还要拦下 pointerdown / touchstart，否则在工具栏上滑动会同时拖动地图 */
 ['hint', 'toolbar', 'info'].forEach(id => {
   const el = document.getElementById(id);
   if (!el) return;
-  ['click', 'mousedown', 'dblclick'].forEach(t => el.addEventListener(t, e => e.stopPropagation()));
+  ['click', 'mousedown', 'dblclick', 'pointerdown', 'touchstart'].forEach(t => el.addEventListener(t, e => e.stopPropagation()));
 });
 
 const ui = { info: document.getElementById('info'), legend: document.getElementById('legend') };
@@ -1559,11 +1622,25 @@ map.on('click', (e) => {
   showPickMarker(lat, lon, elev);
   renderInfoCard();
   renderProfile();
+  keepPointVisible(e.latlng);
 });
+
+/** 取点后别让标记压在信息卡 / 抽屉背后（桌面端视野不动） */
+function keepPointVisible(latlng) {
+  const sheet = sheetPx();
+  if (!sheet) return;
+  map.panInside(latlng, {
+    paddingTopLeft: [20, 120],
+    paddingBottomRight: [20, sheet + (ui.info.offsetHeight || 0) + 56],
+    animate: true
+  });
+}
 
 /* ---------------------------------------------------------- 悬停提示 */
 let hoverTip = null;
+const TOUCH = window.matchMedia('(pointer:coarse)').matches;   // 触屏没有悬停，别留气泡
 map.on('mousemove', (e) => {
+  if (TOUCH) return;
   // 光标落在四个点位牌上时不提示，保持「点击后才显示数值」的节奏
   if (e.originalEvent.target.closest?.('.anchor-pin')) {
     if (hoverTip) { hoverTip.remove(); hoverTip = null; }
@@ -1600,6 +1677,9 @@ function randomPick() {
   showPickMarker(lat, lon, elev);
   renderInfoCard();
   renderProfile();
+  // 手机上取样点可能落在抽屉遮住的区域，把它挪进可视区
+  const [glng, glat] = wgs2gcj(lon, lat);
+  keepPointVisible(L.latLng(glat, glng));
 }
 /* ------------------------------------------------------------- 图例 */
 function renderLegend() {
@@ -1667,14 +1747,29 @@ async function boot() {
     console.error(err);
   }
 }
-/** 视野收缩到四个点位：侧栏可见时让出左侧空间，收起后重新占满 */
+/** 底部抽屉占用的高度（px）：桌面端无抽屉返回 0，手机端收起时只剩标题条 */
+function sheetPx() {
+  if (window.innerWidth > 720) return 0;
+  const panel = document.getElementById('panel');
+  if (!panel) return 0;
+  if (!document.body.classList.contains('panel-hidden')) return panel.offsetHeight;
+  return parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--peek')) || 72;
+}
+/** 定位到某点：手机端把点抬到抽屉上方的可见区中央，避免落在信息卡背后 */
+function focusLatLng(lat, lng, zoom) {
+  const sheet = sheetPx();
+  if (!sheet) { map.setView([lat, lng], zoom, { animate: true }); return; }
+  const c = map.unproject(map.project([lat, lng], zoom).add([0, sheet / 2]), zoom);
+  map.setView(c, zoom, { animate: true });
+}
+/** 视野收缩到四个点位：侧栏可见时让出左侧空间，手机端让出顶部工具与底部抽屉 */
 function fitAnchors(animate) {
   const bounds = L.latLngBounds(ANCHORS.map(a => {
     const [lng, lat] = wgs2gcj(a.lon, a.lat);
     return [lat, lng];
   }));
   if (window.innerWidth <= 720) {
-    map.fitBounds(bounds, { paddingTopLeft: [24, 150], paddingBottomRight: [24, 60], animate: !!animate });
+    map.fitBounds(bounds, { paddingTopLeft: [18, 118], paddingBottomRight: [18, sheetPx() + 28], animate: !!animate });
     return;
   }
   const left = document.body.classList.contains('panel-hidden') ? 40 : 400;
@@ -1754,7 +1849,7 @@ window.PROFILE = [{"d":0.0,"lat":28.534147,"lon":106.613049,"e":1167.5,"t":0.51,
       el.onclick = () => {
         const a = ANCHORS.find(x => x.id === el.dataset.id);
         const [lng, lat] = wgs2gcj(a.lon, a.lat);
-        map.setView([lat, lng], 14, { animate: true });
+        focusLatLng(lat, lng, 14);       // 手机端会避开底部抽屉，把点位留在可见区
         showAnchorInfo(a);
       };
     });
@@ -1765,8 +1860,9 @@ window.PROFILE = [{"d":0.0,"lat":28.534147,"lon":106.613049,"e":1167.5,"t":0.51,
     const btn = document.getElementById('panelToggle');
     const sync = () => {
       const hidden = document.body.classList.contains('panel-hidden');
+      const mobile = window.innerWidth <= 720;
       btn.textContent = hidden ? '›' : '‹';
-      btn.title = hidden ? '显示侧栏' : '隐藏侧栏';
+      btn.title = hidden ? (mobile ? '展开数据面板' : '显示侧栏') : (mobile ? '收起数据面板' : '隐藏侧栏');
       btn.setAttribute('aria-label', btn.title);
     };
     btn.onclick = () => { document.body.classList.toggle('panel-hidden'); sync(); };
