@@ -840,6 +840,11 @@ body.panel-hidden #panelToggle{left:0}
   font-size:12.5px;color:#2a2c2e !important;background:#fffdf8;
   padding:2px 6px;border-radius:4px;box-shadow:0 0 0 1px rgba(34,38,43,.22);font-weight:700;
 }
+/* 地名标注：仿底图原生注记——深灰无衬线、不加粗、无图标，仅放大字号 */
+.village-label{background:transparent;border:0;pointer-events:none}
+.village-label .vt{display:block;text-align:center;font:400 24px/1.25 "FangSong","仿宋","STFangsong",serif;letter-spacing:0;white-space:nowrap;
+  color:#444444;
+  text-shadow:0 0 3px rgba(255,253,248,.85),0 0 6px rgba(255,253,248,.45)}
 .hover-tip{
   background:#22262b;border:0;color:#fffaf3;border-radius:var(--r);
   padding:6px 11px;font-size:13px;box-shadow:0 3px 12px rgba(0,0,0,.22);
@@ -1347,7 +1352,7 @@ roadLayer.addTo(map);
 
 const hillLayer = L.layerGroup(), contourLayer = L.layerGroup(), isoLayer = L.layerGroup(),
       anchorLayer = L.layerGroup(), contourLabels = L.layerGroup(), isoLabels = L.layerGroup(),
-      pickLayer = L.layerGroup();
+      pickLayer = L.layerGroup(), villageLayer = L.layerGroup();
 
 /* 底图瓦片失败自动降级：不透明晕渲保证断网可读；网络恢复自愈回默认关闭 */
 let offlineMode = false, tileErrs = 0, hillAuto = false;
@@ -1510,6 +1515,23 @@ function buildAnchors() {
     }).addTo(anchorLayer);
     m.on('click', () => showAnchorInfo(a));
     a.marker = m;
+  });
+}
+/* 地名标注：以 GCJ-02 坐标直接落在底图地名处（如「大罗村」），与演练点位相互独立 */
+const VILLAGES = [
+  { name: '大罗村', gcj: [28.52536, 106.65018] }   // 大罗村村民委员会（GCJ-02）
+];
+function buildVillageLabels() {
+  villageLayer.clearLayers();
+  VILLAGES.forEach(v => {
+    L.marker(v.gcj, {
+      icon: L.divIcon({
+        className: 'village-label',
+        html: `<span class="vt">${v.name}</span>`,
+        iconSize: [80, 32], iconAnchor: [40, 16]
+      }),
+      interactive: false, zIndexOffset: 550
+    }).addTo(villageLayer);
   });
 }
 /** 当前采样点的醒目标识：精确定位光晕 + 数值胶囊；换点即替换旧标记 */
@@ -1735,11 +1757,12 @@ async function boot() {
     const base = ANCHORS.find(a => a.id === 'shihao');
     if (base) MODEL.E0 = Math.round(base.elev);
     buildAnchors();
+    buildVillageLabels();
     drawContours();
     renderLegend();
     renderProfile();
     map.addLayer(contourLayer); map.addLayer(contourLabels);
-    map.addLayer(isoLayer); map.addLayer(isoLabels); map.addLayer(anchorLayer); map.addLayer(pickLayer);
+    map.addLayer(isoLayer); map.addLayer(isoLabels); map.addLayer(anchorLayer); map.addLayer(pickLayer); map.addLayer(villageLayer);
     window.renderAnchorList?.();
     fitAnchors(false);            // 四个点位刚好铺满可视区（比例尺约 500 m）
   } catch (err) {
