@@ -1534,6 +1534,13 @@ function buildVillageLabels() {
     }).addTo(villageLayer);
   });
 }
+/* 放大超过初始比例（zoom > 14，即 500m 比例尺以上）时隐藏「大罗村」地名标注 */
+const VILLAGE_HIDE_ZOOM = 14;
+function updateVillageVisibility() {
+  const show = map.getZoom() <= VILLAGE_HIDE_ZOOM;
+  if (show && !map.hasLayer(villageLayer)) map.addLayer(villageLayer);
+  if (!show && map.hasLayer(villageLayer)) map.removeLayer(villageLayer);
+}
 /** 当前采样点的醒目标识：精确定位光晕 + 数值胶囊；换点即替换旧标记 */
 function showPickMarker(lat, lon, elev) {
   pickLayer.clearLayers();
@@ -1763,6 +1770,7 @@ async function boot() {
     renderProfile();
     map.addLayer(contourLayer); map.addLayer(contourLabels);
     map.addLayer(isoLayer); map.addLayer(isoLabels); map.addLayer(anchorLayer); map.addLayer(pickLayer); map.addLayer(villageLayer);
+    map.on('zoomend', updateVillageVisibility);
     window.renderAnchorList?.();
     fitAnchors(false);            // 四个点位刚好铺满可视区（比例尺约 500 m）
   } catch (err) {
